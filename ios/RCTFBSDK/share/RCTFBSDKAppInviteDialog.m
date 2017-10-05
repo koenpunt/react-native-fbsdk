@@ -55,20 +55,21 @@ RCT_EXPORT_MODULE(FBAppInviteDialog);
 
 #pragma mark - Object Lifecycle
 
-- (instancetype)init
+- (FBSDKAppInviteDialog *)dialog
 {
-  if ((self = [super init])) {
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
     _dialog = [[FBSDKAppInviteDialog alloc] init];
     _dialog.delegate = self;
-  }
-  return self;
+  });
+  return _dialog;
 }
 
 #pragma mark - React Native Methods
 
 RCT_EXPORT_METHOD(canShow:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
-  resolve(@([_dialog canShow]));
+  resolve(@([[self dialog] canShow]));
 }
 
 RCT_EXPORT_METHOD(show:(FBSDKAppInviteContent *)content
@@ -77,8 +78,8 @@ RCT_EXPORT_METHOD(show:(FBSDKAppInviteContent *)content
 {
   _showResolver = resolve;
   _showRejecter = reject;
-  [_dialog setContent:content];
-  [_dialog show];
+  [[self dialog] setContent:content];
+  [[self dialog] show];
 
 }
 

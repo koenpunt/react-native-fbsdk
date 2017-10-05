@@ -70,20 +70,21 @@ RCT_EXPORT_MODULE(FBGameRequestDialog);
 
 #pragma mark - Object Lifecycle
 
-- (instancetype)init
+- (FBSDKGameRequestDialog *)dialog
 {
-  if ((self = [super init])) {
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
     _dialog = [[FBSDKGameRequestDialog alloc] init];
     _dialog.delegate = self;
-  }
-  return self;
+  });
+  return _dialog;
 }
 
 #pragma mark - React Native Methods
 
 RCT_EXPORT_METHOD(canShow:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
-  resolve([NSNumber numberWithBool:[_dialog canShow]]);
+  resolve([NSNumber numberWithBool:[[self dialog] canShow]]);
 }
 
 RCT_EXPORT_METHOD(show:(FBSDKGameRequestContent *)gameRequestContent
@@ -92,8 +93,8 @@ RCT_EXPORT_METHOD(show:(FBSDKGameRequestContent *)gameRequestContent
 {
   _showResolve = resolve;
   _showReject = reject;
-  [_dialog setContent:gameRequestContent];
-  [_dialog show];
+  [[self dialog] setContent:gameRequestContent];
+  [[self dialog] show];
 }
 
 #pragma mark - FBSDKSharingDelegate

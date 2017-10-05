@@ -43,23 +43,24 @@ RCT_EXPORT_MODULE(FBShareDialog);
 
 #pragma mark - Object Lifecycle
 
-- (instancetype)init
+- (FBSDKShareDialog *)shareDialog
 {
-  if (self = [super init]) {
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
     _shareDialog = [[FBSDKShareDialog alloc] init];
     _shareDialog.delegate = self;
-  }
-  return self;
+  });
+  return _shareDialog;
 }
 
 #pragma mark - React Native Methods
 
 RCT_EXPORT_METHOD(canShow:(RCTFBSDKSharingContent)content resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
-  _shareDialog.shareContent = content;
-  if ([_shareDialog canShow]) {
+  [self shareDialog].shareContent = content;
+  if ([[self shareDialog] canShow]) {
     NSError *error;
-    if ([_shareDialog validateWithError:&error]) {
+    if ([[self shareDialog] validateWithError:&error]) {
       resolve(@YES);
     } else {
       reject(@"FacebookSDK", @"SharingContent is invalid", error);
@@ -75,23 +76,23 @@ RCT_EXPORT_METHOD(show:(RCTFBSDKSharingContent)content
 {
   _showResolve = resolve;
   _showReject = reject;
-  _shareDialog.shareContent = content;
-  if (!_shareDialog.fromViewController) {
-    _shareDialog.fromViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
+  [self shareDialog].shareContent = content;
+  if (![self shareDialog].fromViewController) {
+    [self shareDialog].fromViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
   }
   dispatch_async(dispatch_get_main_queue(), ^{
-    [_shareDialog show];
+    [[self shareDialog] show];
   });
 }
 
 RCT_EXPORT_METHOD(setMode:(FBSDKShareDialogMode)mode)
 {
-  _shareDialog.mode = mode;
+  [self shareDialog].mode = mode;
 }
 
 RCT_EXPORT_METHOD(setShouldFailOnDataError:(BOOL)shouldFailOnDataError)
 {
-  _shareDialog.shouldFailOnDataError = shouldFailOnDataError;
+  [self shareDialog].shouldFailOnDataError = shouldFailOnDataError;
 }
 
 #pragma mark - FBSDKSharingDelegate
